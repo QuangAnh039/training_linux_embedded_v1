@@ -1,0 +1,1 @@
+viết 1 kernel module khỏi tạo timer check trạng thái chân GPIO của button mỗi 1ms. Nếu thấy button được nhấn thì bật đèn led. Néu thấy button được nhả thì tắt đèn led

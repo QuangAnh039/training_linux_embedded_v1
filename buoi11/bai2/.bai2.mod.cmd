@@ -1,0 +1,1 @@
+cmd_/home/quanganh/training_linux_embedded_v1/buoi11/bai2/bai2.mod := { echo  /home/quanganh/training_linux_embedded_v1/buoi11/bai2/main.o;  echo; } > /home/quanganh/training_linux_embedded_v1/buoi11/bai2/bai2.mod

@@ -1,0 +1,102 @@
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/serdev.h>
+#include <linux/mod_devicetable.h>
+#include <linux/property.h>
+#include <linux/platform_device.h>
+#include <linux/of_device.h>
+#include <linux/miscdevice.h>
+#include <linux/fs.h>
+#include <linux/workqueue.h> 
+#include <linux/slab.h>
+static int serial_user_probe(struct serdev_device *pdev);
+static void serial_user_remove(struct serdev_device *pdev);
+void workqueue_fn(struct work_struct *work);
+
+const unsigned char *ptr = NULL;
+int sum = 0;
+//Work_queue
+DECLARE_WORK(workqueue, workqueue_fn);
+
+void workqueue_fn(struct work_struct *work)
+{
+    unsigned int tmp_var;
+    printk(KERN_INFO "Executing Workqueue Function\n");
+    kstrtouint(ptr, 100, &tmp_var);
+    sum = sum + tmp_var;
+    printk("sum is : %d\n", sum);
+}
+
+/* Matching table */
+static const struct of_device_id serial_user_BBB_of_match[] = {
+	{ .compatible = "serial-user-demo"},
+    {}
+};
+
+/**
+ * @brief Callback is called whenever a character is received
+ */
+static int serdev_echo_recv(struct serdev_device *serdev, const unsigned char *buffer, size_t size) 
+{
+	printk("serdev_echo - Received %d bytes with %s\n", size, *buffer);
+    ptr = (const unsigned char *)kmalloc(size, GFP_ATOMIC);
+    if (!ptr) 
+    {
+        // Xử lý lỗi không cấp phát được bộ nhớ
+        printk("Can not allocate heap!!");
+        return 1;
+    }
+    *ptr = *buffer;
+    schedule_work(&workqueue);
+    return 0;
+}
+
+static const struct serdev_device_ops serdev_echo_ops = {
+	.receive_buf = serdev_echo_recv,
+};
+
+static struct serdev_device_driver serial_user_driver = 
+{
+	.probe		= serial_user_probe,
+    .remove     = serial_user_remove,
+	.driver		= {
+		.name	= "serial_user",
+		.of_match_table = serial_user_BBB_of_match,
+	},
+};
+
+static int serial_user_probe(struct serdev_device *pdev)
+{
+    int ret = -1;
+    int status = 0;
+
+    pr_info("probe is called\n");
+
+    serdev_device_set_client_ops(pdev, &serdev_echo_ops);
+    status = serdev_device_open(pdev);
+	if(status) {
+		printk("serdev_echo - Error opening serial port!\n");
+		return -status;
+	}
+
+    serdev_device_set_baudrate(pdev, 9600);
+	serdev_device_set_flow_control(pdev, false);
+	serdev_device_set_parity(pdev, SERDEV_PARITY_NONE);
+
+    status = serdev_device_write_buf(pdev, "Type something: ", sizeof("Type something: "));
+    pr_info("Byte wrote : %d\n", status);
+
+    return 0;
+}
+
+static void serial_user_remove(struct serdev_device  *pdev)
+{
+    //int ret = -1;
+    pr_info("remove serial module\n");
+    //return 0;
+}
+
+module_serdev_device_driver(serial_user_driver);
+
+MODULE_LICENSE("GPL");
+MODULE_DESCRIPTION("Serial Led kernel module");

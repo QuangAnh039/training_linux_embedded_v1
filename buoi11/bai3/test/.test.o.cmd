@@ -1,0 +1,1 @@
+cmd_/home/quanganh/training_linux_embedded_v1/buoi11/bai3/test/test.o := /home/quanganh/kernelbuildscripts/dl/gcc-8.5.0-nolibc/arm-linux-gnueabi/bin/arm-linux-gnueabi-ld  -EL    -r -o /home/quanganh/training_linux_embedded_v1/buoi11/bai3/test/test.o /home/quanganh/training_linux_embedded_v1/buoi11/bai3/test/main.o

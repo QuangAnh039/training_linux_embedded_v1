@@ -1,0 +1,1 @@
+viết 1 kernel module để khởi tạo 1 interrupt handler cho button. Mỗi khi button được nhấn thì gọi interrupt handler ra để bật led. Néu button nhả ra thì gọi handler để tắt led
